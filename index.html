@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Worklet Starter Kit ✨</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        height: 100vh;
+        display: grid;
+        place-items: center;
+      }
+
+      .wrapper {
+        width: 100%;
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .palette {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-gap: 1rem;
+      }
+
+      .palette .color {
+        height: 6rem;
+        border-radius: 1rem;
+
+        /* 
+          Most browsers don't support LCH color right now, use the paint-api fallback by default 
+
+          Note: I am using a polyfill for the CSS Paint API
+        */
+        background-image: paint(lchBackground);
+      }
+
+      /* If the browser supports LCH, use it! */
+      @supports (background-color: lch(0% 0 0 / 100%)) {
+        .palette .color {
+          background: var(--base-lch);
+        }
+      }
+
+      /* 
+        Create a simple (perceptually uniform!) triadic palette in LCH 🎨
+
+        3 hues, each 120 degees apart - values > 360 will "wrap" back around as per usual CSS behaviour!
+
+        Colors are formatted: (Lightness, Chroma, Hue, Alpha)
+        https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/lch()
+      */
+      .palette .color:nth-of-type(1) {
+        --base-lch: lch(70% 75 40 / 100%);
+      }
+
+      .palette .color:nth-of-type(2) {
+        --base-lch: lch(70% 75 360 / 100%);
+      }
+
+      .palette .color:nth-of-type(3) {
+        --base-lch: lch(70% 75 480 / 100%);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="palette">
+        <div class="color"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+      </div>
+    </div>
+    <script>
+      (async function () {
+        if (CSS['paintWorklet'] === undefined) {
+          await import('https://unpkg.com/css-paint-polyfill');
+
+          // Fix weird bug where the paint api polyfill sometimes does not apply initially
+          setTimeout(() => {
+            document
+              .querySelectorAll('.color')
+              .forEach((el) => (el.style.width = '100%'));
+          }, 250);
+        }
+        CSS.paintWorklet.addModule('./worklet.bundle.js');
+      })();
+    </script>
+  </body>
+</html>
